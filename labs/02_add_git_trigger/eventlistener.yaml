@@ -1,5 +1,24 @@
+# The API version required for Tekton Triggers
 apiVersion: triggers.tekton.dev/v1beta1
+
+# Tells Kubernetes this file creates an EventListener (The "Doorbell")
 kind: EventListener
+
 metadata:
-  name: <place-name-here>
+  # The name of our listener. We are calling it cd-listener.
+  name: cd-listener
+
 spec:
+  # The ID badge Tekton needs to create containers and run pipelines securely
+  serviceAccountName: pipeline
+  
+  # The list of triggers (rules) that fire when GitHub sends a signal
+  triggers:
+    # The dash '-' means this is a list item. You can have multiple triggers.
+    - bindings:
+      # Tells the listener to use 'cd-binding' to extract data (like the repo URL) from GitHub's signal
+      - ref: cd-binding
+      
+      # Tells the listener to use 'cd-template' to build the final PipelineRun using the extracted data
+      template:
+        ref: cd-template

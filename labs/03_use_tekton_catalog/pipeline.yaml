@@ -1,54 +1,80 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
-metadata:  
+metadata:
   name: cd-pipeline
+
 spec:
+  # 1. The Pipeline declares it has a hard drive
+  workspaces:
+    - name: pipeline-workspace
+      
   params:
     - name: repo-url
     - name: branch
-      default: "master"
+      default: "main"
+      
   tasks:
+    # ---------------------------------------------------------
+    # TASK 1: CLONE (Using the official App Store task)
+    # ---------------------------------------------------------
     - name: clone
+      # Give the official task the hard drive it wants, named 'output'
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
       taskRef:
-        name: checkout
+        name: git-clone
       params:
-      - name: repo-url
-        value: "$(params.repo-url)"
-      - name: branch
-        value: "$(params.branch)"
-
+        # Translate pipeline params to the ones git-clone expects
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.branch)
+          
+    # ---------------------------------------------------------
+    # TASK 2: LINT (Placeholder)
+    # ---------------------------------------------------------
     - name: lint
       taskRef:
         name: echo
       params:
-      - name: message
-        value: "Calling Flake8 linter..."
+        - name: message
+          value: "Calling Flake8 linter..."
       runAfter:
         - clone
 
+    # ---------------------------------------------------------
+    # TASK 3: TESTS (Placeholder)
+    # ---------------------------------------------------------
     - name: tests
       taskRef:
         name: echo
       params:
-      - name: message
-        value: "Running unit tests with PyUnit..."
+        - name: message
+          value: "Running unit tests with PyUnit..."
       runAfter:
         - lint
 
+    # ---------------------------------------------------------
+    # TASK 4: BUILD (Placeholder)
+    # ---------------------------------------------------------
     - name: build
       taskRef:
         name: echo
       params:
-      - name: message
-        value: "Building image for $(params.repo-url) ..."
+        - name: message
+          value: "Building image for $(params.repo-url) ..."
       runAfter:
         - tests
 
+    # ---------------------------------------------------------
+    # TASK 5: DEPLOY (Placeholder)
+    # ---------------------------------------------------------
     - name: deploy
       taskRef:
         name: echo
       params:
-      - name: message
-        value: "Deploying $(params.branch) branch of $(params.repo-url) ..."
+        - name: message
+          value: "Deploying $(params.branch) branch of $(params.repo-url) ..."
       runAfter:
         - build

@@ -1,5 +1,20 @@
+# The API version required for Tekton Triggers
 apiVersion: triggers.tekton.dev/v1beta1
+
+# Tells Kubernetes this file creates a TriggerBinding (The "Data Extractor")
 kind: TriggerBinding
+
 metadata:
-  name: <place-name-here>
+  # The name must match exactly what we put in the EventListener earlier!
+  name: cd-binding
+
 spec:
+  # The list of variables we want to extract from GitHub's payload
+  params:
+    # Extracts the repository URL from the GitHub JSON and names it "repository"
+    - name: repository
+      value: $(body.repository.url)
+      
+    # Extracts the branch name from the GitHub JSON and names it "branch"
+    - name: branch
+      value: $(body.ref)

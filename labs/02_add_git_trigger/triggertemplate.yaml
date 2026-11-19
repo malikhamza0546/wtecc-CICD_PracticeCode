@@ -1,14 +1,42 @@
+# The API version required for Tekton Triggers
 apiVersion: triggers.tekton.dev/v1beta1
+
+# Tells Kubernetes this file creates a TriggerTemplate (The "Blueprint Builder")
 kind: TriggerTemplate
+
 metadata:
-  name: <place-name-here>
+  # The name must match exactly what we put in the EventListener!
+  name: cd-template
+
 spec:
+  # The blank forms the Template expects to receive from the TriggerBinding
   params:
-  # Add parameters here
+    - name: repository
+      description: The git repo
+      default: " "
+    - name: branch
+      description: the branch for the git repo
+      default: master
+
+  # The actual resources to create when the trigger fires
   resourcetemplates:
+    # We are creating a new PipelineRun
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
+        # Tekton automatically adds random characters to the end (e.g., cd-pipeline-run-x8f2j)
         generateName: cd-pipeline-run-
       spec:
-      # Add pipeline definition here
+        # The ID badge needed to run the pipeline
+        serviceAccountName: pipeline
+        
+        # Point to the pipeline we built in the previous lab
+        pipelineRef:
+          name: cd-pipeline
+          
+        # Pass the data from the TriggerBinding into the Pipeline's parameters
+        params:
+          - name: repo-url
+            value: $(tt.params.repository)
+          - name: branch
+            value: $(tt.params.branch)
